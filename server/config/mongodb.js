@@ -2,11 +2,16 @@ import mongoose from "mongoose";
 
 const connectDB = async () => {
   try {
-    // More robust connection with better error handling
+    // More robust connection with better timeout handling
     const conn = await mongoose.connect(process.env.MONGODB_URL, {
       dbName: 'auth_mern1',
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
+      // Connection options for better reliability
+      serverSelectionTimeoutMS: 30000, // 30 seconds timeout
+      socketTimeoutMS: 45000, // 45 seconds timeout
+      maxIdleTimeMS: 30000, // 30 seconds max idle time
+      retryWrites: true,
+      retryReads: true,
+      // Remove deprecated options
     });
 
     console.log(`MongoDB Connected: ${conn.connection.host}`);
@@ -20,6 +25,10 @@ const connectDB = async () => {
       console.log('MongoDB disconnected');
     });
 
+    mongoose.connection.on('reconnected', () => {
+      console.log('MongoDB reconnected');
+    });
+
     // Handle process termination
     process.on('SIGINT', async () => {
       await mongoose.connection.close();
@@ -29,7 +38,8 @@ const connectDB = async () => {
 
   } catch (error) {
     console.error('MongoDB connection failed:', error.message);
-    process.exit(1);
+    // Retry connection after 5 seconds
+    setTimeout(connectDB, 5000);
   }
 };
 
