@@ -15,36 +15,15 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 app.use(cookieParser());
 
-// CORS configuration - Allow specific origins for Vercel deployment
-const corsOptions = {
-  origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
-    
-    // List of allowed origins
-    const allowedOrigins = [
-      'http://localhost:3000',
-      'http://localhost:5173',
-      'http://127.0.0.1:5173',
-      'https://authshrivani-p6sf.vercel.app',
-      // Add your actual frontend URL here
-      process.env.FRONTEND_URL // For flexibility in different environments
-    ];
-    
-    if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  credentials: true,
-  optionsSuccessStatus: 200
-};
-
-app.use(cors(corsOptions));
+// CORS configuration - Allow all origins with *
+app.use(cors({
+    origin: '*',
+    credentials: true,
+    optionsSuccessStatus: 200
+}));
 
 // Handle preflight requests for all routes
-app.options('*', cors(corsOptions));
+app.options('*', cors());
 
 // API Endpoints
 app.get('/', (req, res) => {

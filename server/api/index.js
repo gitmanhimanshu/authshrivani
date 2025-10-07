@@ -7,21 +7,8 @@ connectDB().catch(error => {
 });
 
 export default async function handler(req, res) {
-  // Set CORS headers for all requests
-  const allowedOrigins = [
-    'http://localhost:3000',
-    'http://localhost:5173',
-    'http://127.0.0.1:5173',
-    'https://authshrivani-p6sf.vercel.app',
-    // Add your actual frontend URL here
-    process.env.FRONTEND_URL
-  ];
-
-  const origin = req.headers.origin;
-  if (allowedOrigins.includes(origin) || !origin) {
-    res.setHeader('Access-Control-Allow-Origin', origin || '*');
-  }
-  
+  // Set CORS headers to allow all origins with *
+  res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
   res.setHeader('Access-Control-Allow-Credentials', 'true');
