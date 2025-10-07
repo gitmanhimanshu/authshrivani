@@ -44,37 +44,42 @@ app.get('/health', (req, res) => {
     });
 });
 
-// Connect to MongoDB with retry logic
-const startServer = async () => {
-  try {
-    await connectDB();
-    
-    const server = app.listen(port, '0.0.0.0', () => {
-        console.log(`Server started on PORT: ${port}`);
-    });
+// For Vercel deployment, export the app instance
+export default app;
 
-    // Handle server errors
-    server.on('error', (error) => {
-        console.error('Server error:', error.message);
-        process.exit(1);
-    });
+// Connect to database when not on Vercel
+if (process.env.VERCEL !== '1') {
+  const startServer = async () => {
+    try {
+      await connectDB();
+      
+      const server = app.listen(port, '0.0.0.0', () => {
+          console.log(`Server started on PORT: ${port}`);
+      });
 
-    // Graceful shutdown
-    const shutdown = () => {
-        console.log('Shutting down gracefully...');
-        server.close(() => {
-            console.log('Process terminated');
-            process.exit(0);
-        });
-    };
+      // Handle server errors
+      server.on('error', (error) => {
+          console.error('Server error:', error.message);
+          process.exit(1);
+      });
 
-    process.on('SIGTERM', shutdown);
-    process.on('SIGINT', shutdown);
+      // Graceful shutdown
+      const shutdown = () => {
+          console.log('Shutting down gracefully...');
+          server.close(() => {
+              console.log('Process terminated');
+              process.exit(0);
+          });
+      };
 
-  } catch (error) {
-    console.error('Failed to start server:', error.message);
-    process.exit(1);
-  }
-};
+      process.on('SIGTERM', shutdown);
+      process.on('SIGINT', shutdown);
 
-startServer();
+    } catch (error) {
+      console.error('Failed to start server:', error.message);
+      process.exit(1);
+    }
+  };
+
+  startServer();
+}

@@ -2,6 +2,17 @@ import mongoose from "mongoose";
 
 const connectDB = async () => {
   try {
+    // Check if we're already connected
+    if (mongoose.connection.readyState === 1) {
+      console.log('Already connected to MongoDB');
+      return;
+    }
+
+    // If we're connecting or disconnecting, wait a bit
+    if (mongoose.connection.readyState === 2 || mongoose.connection.readyState === 3) {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+
     // More robust connection with better timeout handling
     const conn = await mongoose.connect(process.env.MONGODB_URL, {
       dbName: 'auth_mern1',
@@ -29,17 +40,9 @@ const connectDB = async () => {
       console.log('MongoDB reconnected');
     });
 
-    // Handle process termination
-    process.on('SIGINT', async () => {
-      await mongoose.connection.close();
-      console.log('MongoDB connection closed due to app termination');
-      process.exit(0);
-    });
-
   } catch (error) {
     console.error('MongoDB connection failed:', error.message);
-    // Retry connection after 5 seconds
-    setTimeout(connectDB, 5000);
+    throw error; // Re-throw the error so it can be handled by the caller
   }
 };
 
